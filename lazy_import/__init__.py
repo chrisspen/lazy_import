@@ -34,7 +34,7 @@
 # CHANGELOG file of lazy_import. Changes mainly involved Python 3
 # compatibility, extension to allow customizable behavior, and added
 # functionality (lazy importing of callable objects).
-# 
+#
 
 """
 Lazy module loading
@@ -230,6 +230,20 @@ class LazyCallable(object):
 
 ### Functions ###
 
+
+def lazy_modules(modname, subnames, *args, **kwargs):
+    """
+    Multi-import version of lazy_module().
+    Equivalent of:
+
+        from some.sub.module import submod1, submod2, etc
+    """
+    parts = []
+    for subname in subnames:
+        parts.append(lazy_module(f'{modname}.{subname}', *args, **kwargs)
+    return parts
+
+
 def lazy_module(modname, error_strings=None, lazy_mod_class=LazyModule,
                   level='leaf'):
     """Function allowing lazy importing of a module into the namespace.
@@ -302,7 +316,7 @@ def lazy_module(modname, error_strings=None, lazy_mod_class=LazyModule,
     True
     >>> np.pi # This causes the full loading of the module ...
     3.141592653589793
-    >>> np # ... and the module is changed in place. 
+    >>> np # ... and the module is changed in place.
     <module 'numpy' from '/usr/local/lib/python/site-packages/numpy/__init__.py'>
 
     >>> import lazy_import, sys
@@ -339,12 +353,12 @@ def _lazy_module(modname, error_strings, lazy_mod_class):
         fullmodname = modname
         fullsubmodname = None
         # ensure parent module/package is in sys.modules
-        # and parent.modname=module, as soon as the parent is imported   
+        # and parent.modname=module, as soon as the parent is imported
         while modname:
             try:
                 mod = sys.modules[modname]
                 # We reached a (base) module that's already loaded. Let's stop
-                # the cycle. Can't use 'break' because we still want to go 
+                # the cycle. Can't use 'break' because we still want to go
                 # through the fullsubmodname check below.
                 modname = ''
             except KeyError:
@@ -364,7 +378,7 @@ def _lazy_module(modname, error_strings, lazy_mod_class):
 
                     def __repr__(self):
                         return "Lazily-loaded module {}".format(self.__name__)
-                # A bit of cosmetic, to make AttributeErrors read more natural  
+                # A bit of cosmetic, to make AttributeErrors read more natural
                 _LazyModule.__name__ = 'module'
                 # Actual module instantiation
                 mod = sys.modules[modname] = _LazyModule(modname)
@@ -390,7 +404,7 @@ def lazy_callable(modname, *names, **kwargs):
     triggered when the returned lazy function itself is called. This lazy
     import of the target module uses the same mechanism as
     :func:`lazy_module`.
-    
+
     If, however, the target module has already been fully imported prior
     to invocation of :func:`lazy_callable`, then the target callables
     themselves are returned and no lazy imports are made.
@@ -430,7 +444,7 @@ def lazy_callable(modname, *names, **kwargs):
         If only *modname* is passed it is assumed to be a full
         'module_name.callable_name' string, in which case the wrapper for the
         imported callable is returned directly, and not in a tuple.
-        
+
     Notes
     -----
     Unlike :func:`lazy_module`, which returns a lazy module that eventually
@@ -533,7 +547,7 @@ def _load_module(module):
             cached_data = _clean_lazymodule(module)
             try:
                 # Get Python to do the real import!
-                reload_module(module)           
+                reload_module(module)
             except:
                 # Loading failed. We reset our lazy state.
                 logger.debug("Failed to load module {}. Resetting..."
@@ -625,7 +639,7 @@ def _clean_lazymodule(module):
 
     Parameters
     ----------
-    module: LazyModule 
+    module: LazyModule
 
     Returns
     -------
@@ -689,7 +703,7 @@ def _reset_lazy_submod_refs(module):
             resetnames = getattr(modclass, deldict)
         except AttributeError:
             continue
-        for name, submod in resetnames.items(): 
+        for name, submod in resetnames.items():
             super(LazyModule, module).__setattr__(name, submod)
 
 
