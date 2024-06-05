@@ -231,17 +231,22 @@ class LazyCallable(object):
 ### Functions ###
 
 
-def lazy_modules(modname, subnames, *args, **kwargs):
+def lazy_modules(modname, subnames=None, *args, **kwargs):
     """
     Multi-import version of lazy_module().
     Equivalent of:
 
         from some.sub.module import submod1, submod2, etc
+
+    Subnames is a sequence of submodule names.
+    If omitted, this reverts to a simple wrapper around lazy_module().
     """
     parts = []
-    for subname in subnames:
-        parts.append(lazy_module(f'{modname}.{subname}', *args, **kwargs)
-    return parts
+    if subnames:
+        for subname in subnames:
+            parts.append(lazy_module(f'{modname}.{subname}', *args, **kwargs)
+        return parts
+    return lazy_module(modname, *args, **kwargs)
 
 
 def lazy_module(modname, error_strings=None, lazy_mod_class=LazyModule,
